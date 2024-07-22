@@ -11,6 +11,9 @@ CORS(app)  # Enable Cross-Origin Resource Sharing (CORS)
 model = joblib.load('xgboost_model.pkl')
 feature_columns = joblib.load('feature_columns.pkl')
 
+# Extract the list of locations from feature columns
+locations = [col.replace('City/Locality_', '') for col in feature_columns if 'City/Locality_' in col]
+
 # Function to preprocess input data
 def preprocess_data(df):
     # Select the required columns
@@ -29,6 +32,11 @@ def preprocess_data(df):
 @app.route('/')
 def home():
     return "Welcome to the House Price Prediction API!"
+
+# Route for getting locations
+@app.route('/locations', methods=['GET'])
+def get_locations():
+    return jsonify({'locations': locations})
 
 # Route for predicting house prices
 @app.route('/predict', methods=['POST'])
@@ -70,7 +78,7 @@ def predict():
     predicted_price = model.predict(input_df)[0]
     
     # Convert predicted_price to standard Python float
-    predicted_price = float(predicted_price)
+    predicted_price = int(predicted_price)
     
     return jsonify({'predicted_price': predicted_price})
 
